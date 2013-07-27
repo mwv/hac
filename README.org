@@ -1,8 +1,7 @@
-#+TITLE: HAC Sample Code
 #+AUTHOR: Maarten Versteegh
-* Sample code for histograms of acoustic co-occurrences
+* HAC Sample code
 ** Usage
-This code has two main scripts: [[https://github.com/mwv/hac/train_codebook.py][train_codebook.py]], which trains a VQ codebook on a directory of audio files; and [[https://github.com/mwv/hac/sig2hac.py][sig2hac.py]], which converts a single audiofile to its HAC representation.
+This code has two main scripts: [[https://github.com/mwv/hac/blob/master/src/train_codebook.py][train_codebook.py]], which trains a VQ codebook on a directory of audio files; and [[https://github.com/mwv/hac/blob/master/src/sig2hac.py][sig2hac.py]], which converts a single audiofile to its HAC representation.
 
 *** Training a codebook
 To train a codebook on directory ~/path/to/audiofiles/~ and store the output in ~codebook.pkl~:
@@ -15,8 +14,8 @@ To convert audiofile ~myfile.wav~ to its hac representation ~myhac.pkl~ using co
 
 ** Requirements
 + python 2.7.x
-+ [[http://www.numpy.org][numpy]]
-+ [[http://www.scipy.org][scipy]]
++ [[http://www.numpy.org/][numpy]]
++ [[http://www.scipy.org/][scipy]]
 + [[http://cournape.github.io/audiolab/][scikits.audiolab]]
 + [[http://www.ar.media.kyoto-u.ac.jp/members/david/softwares/samplerate/][scikits.samplerate]]
-+ [[http://www.scikit-learn.org][sklearn]]
++ [[http://www.scikit-learn.org/][sklearn]]
