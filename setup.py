@@ -11,27 +11,21 @@ except ImportError:
     from distutils.core import setup
 
 
-readme = open('README.org').read()
-history = open('HISTORY.rst').read().replace('.. :changelog:', '')
-
 requirements = [
-    spectral
 ]
 
 test_requirements = [
-    spectral
 ]
 
 setup(
-    name=hac',
+    name='hac',
     version='0.1.0',
     description='HAC implementation',
-    long_description=readme + '\n\n' + history,
     author='Maarten Versteegh',
     author_email='maartenversteegh@gmail.com',
     url='https://github.com/mwv/hac',
     packages=[
-        hac',
+        'hac',
     ],
     package_dir={'hac':
                  'hac'},
