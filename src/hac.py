@@ -34,29 +34,43 @@ class HAC(object):
 
     def __init__(self,
                  codebooks,
-                 spectral):
+                 spectral,
+                 lags=None,
+                 vq_method='hard'):
         """
 
         Arguments:
         :param codebooks: list of Codebook objects
         :param spectral: Spectral object.
+        :param lags: list of intervals [2,5]
+        :param vq_method: vector quantization method ['hard']
         """
         self.codebooks = codebooks
         self.spectral = spectral
+        if lags is None:
+            lags = [2, 5]
+        self.lags = lags
+        self.vq_method = vq_method
+
         self._fcs = [0] + list(np.cumsum([cdb.n_features
                                           for cdb in codebooks]))
-        self.n_features = self._fcs[-1]
+        self.n_spec_feats = self._fcs[-1]
+        self.n_spec_feats = len(self.lags) * sum([cdb.n_clusters ** 2
+                                                  for cdb in codebooks])
 
-    def convert_sig(self, sig, lags=None):
-        """
+    def convert_sig(self, sig):
+        """Convert signal to HAC representation.
 
         Arguments:
         :param sig:
         """
-        if lags is None:
-            lags = [2, 5]
-        f = self._fcs
         spec = np.hstack(self.spectral.transform(sig))
+        return self.convert_spec(spec)
+
+    def convert_spec(self, spec):
+        lags = self.lags
+        f = self._fcs
+
         if spec.shape[1] != self.n_features:
             raise ValueError('Incorrect number of features in spectral coding.'
                              'Got {0} features, expected {1}'.format(
@@ -76,7 +90,7 @@ class Codebook(object):
     """
     """
 
-    def __init__(self, clf=cluster.KMeans):
+    def __init__(self, clf=cluster.KMeans()):
         """
 
         Arguments:
@@ -84,6 +98,14 @@ class Codebook(object):
         :param **kwargs:
         """
         self.clf = clf
+        if not hasattr(self.clf, 'fit') or not hasattr(self.clf, 'predict'):
+            raise TypeError('clf must implement '
+                            '`fit` and `predict` methods.')
+
+        if isinstance(clf, cluster.KMeans):
+            self.n_clusters = clf.n_clusters
+        elif isinstance(clf, mixture.GMM):
+            self.n_clusters = clf.n_components
         self.trained = False
 
     def train(self, X):
@@ -93,7 +115,7 @@ class Codebook(object):
         :param X:
         """
         self.clf.fit(X)
-        self.n_classes, self.n_features = self.clf.cluster_centers_.shape
+        self.n_features = X.shape[1]
         self.trained = True
         return self
 
@@ -110,7 +132,13 @@ class Codebook(object):
                              'Got {0} features, expected {1}.'.format(
                                  X.shape[1],
                                  self.n_features))
-        inds = self.clf.predict(X)
-        t = np.zeros((X.shape[0], self.n_classes), dtype=np.int)
-        t[np.arange(X.shape[0]), inds] = 1
+        if method == 'hard':
+            inds = self.clf.predict(X)
+            t = np.zeros((X.shape[0], self.n_classes), dtype=np.int)
+            t[np.arange(X.shape[0]), inds] = 1
+        else:
+            if not hasattr(self.clf, 'predict_proba'):
+                raise TypeError('clf must implement `predict_proba` method'
+                                ' if used with soft vq.')
+            t = self.clf.predict_proba(X)
         return t
